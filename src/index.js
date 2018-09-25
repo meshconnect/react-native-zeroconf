@@ -3,6 +3,9 @@ import { EventEmitter } from 'events'
 
 const RNZeroconf = NativeModules.RNZeroconf
 
+const RESOLUTION_TIME_INTERVAL = 500;
+const CURRENT_INDEX_BEING_RESOLVED = 0;
+
 export default class Zeroconf extends EventEmitter {
 
   constructor (props) {
@@ -11,9 +14,13 @@ export default class Zeroconf extends EventEmitter {
     this._services = {}
     this._resolvedServices = {}
     this._dListeners = {}
+    this._servicesToBeResolved = [];
+    this._onGoingResolution = false;
+    
     console.log("[JSWRAPPER]RNZeroConf::constructor");
 
-    this.addDeviceListeners()
+    this.addDeviceListeners();
+    this.checkServicesToBeResolved();
   }
 
   /**
@@ -39,6 +46,9 @@ export default class Zeroconf extends EventEmitter {
       this._services[name] = service
       this.emit('found', service)
       this.emit('update', service)
+
+      // Lógica para resolver los servicios nada más recibirlos
+      this._servicesToBeResolved.push(service);
     })
 
     this._dListeners.remove = DeviceEventEmitter.addListener('RNZeroconfRemove', service => {
@@ -61,6 +71,12 @@ export default class Zeroconf extends EventEmitter {
       this._services[service.name] = service
       this.emit('resolved', service)
       this.emit('update', service)
+      
+      // Removes the first element selected in CURRENT_INDEX_BEING_RESOLVED of _servicesToBeResolved.
+      this._servicesToBeResolved.splice(CURRENT_INDEX_BEING_RESOLVED, 1);
+
+      // Put ongoing to false, as is available again to continue resolving
+      this._onGoingResolution = false;
     })
 
   }
@@ -105,5 +121,24 @@ export default class Zeroconf extends EventEmitter {
       console.log("[JSWRAPPER]RNZeroConf::stop()");
       await RNZeroconf.stop()
   }
+
+  /**
+   * Check if there are services to be resolved
+   */
+  checkServicesToBeResolved () {
+    console.log("[JSWRAPPER]RNZeroConf::checkServicesToBeResolved");
+    let outerThis = this;
+    //Cada segundo manda a resolver
+    setInterval(function(){
+        if(outerThis._onGoingResolution === false){
+          console.log("[JSWRAPPER]RNZeroConf::checkServicesToBeResolved: services to be resolved", JSON.stringify(outerThis._servicesToBeResolved));
+            if(outerThis._servicesToBeResolved.length > 0){
+              console.log("[JSWRAPPER]RNZeroConf::checkServicesToBeResolved:_onGoingResolution=false. Resolving... ", outerThis._servicesToBeResolved[CURRENT_INDEX_BEING_RESOLVED]);
+              outerThis._onGoingResolution = true;
+              RNZeroconf.resolve(outerThis._servicesToBeResolved[CURRENT_INDEX_BEING_RESOLVED].name)
+            }
+        }
+    }, RESOLUTION_TIME_INTERVAL);
+  } 
 
 }
