@@ -30,7 +30,7 @@ export default class Zeroconf extends EventEmitter {
 
     console.log("[JSWRAPPER]RNZeroConf::addDeviceListeners");
     if (Object.keys(this._dListeners).length) {
-      return this.emit('error', 'RNZeroconf listeners already in place.')
+      return this.emit('errorEvent', 'RNZeroconf listeners already in place.')
     }
 
     this._dListeners.start = DeviceEventEmitter.addListener('RNZeroconfStart', () => this.emit('start'))
