@@ -33,6 +33,7 @@ public class ZeroconfModule extends ReactContextBaseJavaModule {
     public static final String EVENT_FOUND = "RNZeroconfFound";
     public static final String EVENT_REMOVE = "RNZeroconfRemove";
     public static final String EVENT_RESOLVE = "RNZeroconfResolved";
+    public static final String EVENT_RESOLVE_FAILED = "RNZeroconfResolveFailed";
 
     public static final String KEY_SERVICE_NAME = "name";
     public static final String KEY_SERVICE_FULL_NAME = "fullName";
@@ -150,6 +151,7 @@ public class ZeroconfModule extends ReactContextBaseJavaModule {
                     Log.e(LOG_TAG, "::onResolveFailed:FAILURE_MAX_LIMIT"+serviceInfo+errorCode);
                     break;
             }
+            sendEvent(getReactApplicationContext(), EVENT_RESOLVE_FAILED, serviceInfo, null);
         }
 
         @Override
