@@ -58,6 +58,7 @@ export default class Zeroconf extends EventEmitter {
       this._services[name] = service
       this.emit('found', service)
       this.emit('update', service)
+      this.emit('found', this._resolvedServices)
 
       // Lógica para resolver los servicios nada más recibirlos
       this._servicesToBeResolved.push(service);
@@ -68,10 +69,12 @@ export default class Zeroconf extends EventEmitter {
 
       console.log("[JSWRAPPER]RNZeroConf::RNZeroconfRemove:"+name+" ", service);
       delete this._services[name]
+      //TODO: Revisar si podríamos borrar algún elemento que no esté; asegurarse de que existe previamente.
       delete this._resolvedServices[name]
 
-      this.emit('remove', service)
-      this.emit('update', service)
+      // Remove from pending to remove
+
+      this.emit('remove', this._resolvedServices)
     })
 
     this._dListeners.resolved = DeviceEventEmitter.addListener('RNZeroconfResolved', service => {
@@ -86,6 +89,8 @@ export default class Zeroconf extends EventEmitter {
 
       // Put ongoing to false, as is available again to continue resolving
       this._onGoingResolution = false;
+
+      this.emit('resolved', this._resolvedServices)
     })
 
   }
