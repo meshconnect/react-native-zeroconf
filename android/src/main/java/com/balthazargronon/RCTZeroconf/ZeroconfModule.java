@@ -91,9 +91,7 @@ public class ZeroconfModule extends ReactContextBaseJavaModule {
                 Log.e(LOG_TAG, "::onServiceFound:"+serviceInfo);
                 WritableMap service = new WritableNativeMap();
                 service.putString(KEY_SERVICE_NAME, serviceInfo.getServiceName());
-
-                sendEvent(getReactApplicationContext(), EVENT_FOUND, service, null);
-                mNsdManager.resolveService(serviceInfo, new ZeroResolveListener());
+                sendEvent(getReactApplicationContext(), EVENT_FOUND, service, null);    
             }
 
             @Override
