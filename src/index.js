@@ -56,8 +56,6 @@ export default class Zeroconf extends EventEmitter {
       const { name } = service
 
       this._services[name] = service
-      this.emit('found', service)
-      this.emit('update', service)
       this.emit('found', this._resolvedServices)
 
       // Lógica para resolver los servicios nada más recibirlos
@@ -80,9 +78,6 @@ export default class Zeroconf extends EventEmitter {
     this._dListeners.resolved = DeviceEventEmitter.addListener('RNZeroconfResolved', service => {
       console.log("[JSWRAPPER]RNZeroConf::RNZeroconfResolved:", service);
       this._resolvedServices[service.name] = service
-      this._services[service.name] = service
-      this.emit('resolved', service)
-      this.emit('update', service)
       
       // Removes the first element selected in CURRENT_INDEX_BEING_RESOLVED of _servicesToBeResolved.
       this._servicesToBeResolved.splice(CURRENT_INDEX_BEING_RESOLVED, 1);
