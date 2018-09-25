@@ -52,7 +52,6 @@ export default class Zeroconf extends EventEmitter {
     })
 
     this._dListeners.found = DeviceEventEmitter.addListener('RNZeroconfFound', service => {
-      if (!service || !service.name) { return }
       console.log("[JSWRAPPER]RNZeroConf::RNZeroconfFound:", service);
       const { name } = service
 
@@ -65,7 +64,6 @@ export default class Zeroconf extends EventEmitter {
     })
 
     this._dListeners.remove = DeviceEventEmitter.addListener('RNZeroconfRemove', service => {
-      if (!service || !service.name) { return }
       const { name } = service
 
       console.log("[JSWRAPPER]RNZeroConf::RNZeroconfRemove:"+name+" ", service);
@@ -77,8 +75,6 @@ export default class Zeroconf extends EventEmitter {
     })
 
     this._dListeners.resolved = DeviceEventEmitter.addListener('RNZeroconfResolved', service => {
-      if (!service || !service.name) { return }
-
       console.log("[JSWRAPPER]RNZeroConf::RNZeroconfResolved:", service);
       this._resolvedServices[service.name] = service
       this._services[service.name] = service
