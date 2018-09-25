@@ -156,6 +156,12 @@ public class ZeroconfModule extends ReactContextBaseJavaModule {
 
         @Override
         public void onServiceResolved(NsdServiceInfo serviceInfo) {
+            if (serviceInfo.getHost().getHostAddress() == "") { 
+                sendEvent(getReactApplicationContext(), EVENT_RESOLVE_FAILED, serviceInfo, null);
+                Log.d(LOG_TAG, "::onServiceResolved:ipNotFound: "+serviceInfo);
+                return;
+            }
+
             WritableMap service = new WritableNativeMap();
             service.putString(KEY_SERVICE_NAME, serviceInfo.getServiceName());
             service.putString(KEY_SERVICE_FULL_NAME, serviceInfo.getHost().getHostName() + serviceInfo.getServiceType());
@@ -171,6 +177,7 @@ public class ZeroconfModule extends ReactContextBaseJavaModule {
                 txtRecords.putString(String.format(Locale.getDefault(), "%s", key), String.format(Locale.getDefault(), "%s", recordValue != null ? new String(recordValue, "UTF_8") : ""));
               } catch (UnsupportedEncodingException e) {
                 String error = "Failed to encode txtRecord: " + e;
+                //TODO: Pendiente de ver si lo quitamos o no
                 sendEvent(getReactApplicationContext(), EVENT_ERROR, null, error);
               }
             }
@@ -179,17 +186,8 @@ public class ZeroconfModule extends ReactContextBaseJavaModule {
 
             WritableArray addresses = new WritableNativeArray();
             addresses.pushString(serviceInfo.getHost().getHostAddress());
-            
-            if (serviceInfo.getHost().getHostAddress().equals("")) { 
-                String notIpErrorString = "Ip not resolved";
-                sendEvent(getReactApplicationContext(), EVENT_ERROR, null, notIpErrorString);
-                mNsdManager.resolveService(serviceInfo, this);
-                Log.d(LOG_TAG, "::onServiceResolved:"+serviceInfo);
-                return;
-            }
 
             service.putArray(KEY_SERVICE_ADDRESSES, addresses);
-
             Log.d(LOG_TAG, "::onServiceResolved:"+serviceInfo);
             sendEvent(getReactApplicationContext(), EVENT_RESOLVE, service, null);
         }
