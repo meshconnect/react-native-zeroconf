@@ -35,8 +35,21 @@ export default class Zeroconf extends EventEmitter {
 
     this._dListeners.start = DeviceEventEmitter.addListener('RNZeroconfStart', () => this.emit('start'))
     this._dListeners.stop = DeviceEventEmitter.addListener('RNZeroconfStop', () => this.emit('stop'))
-    this._dListeners.error = DeviceEventEmitter.addListener('RNZeroconfError', (err) => this.emit('errorEvent', err)
-      )
+
+    this._dListeners.error = DeviceEventEmitter.addListener('RNZeroconfError', (err) => this.emit('errorEvent', err))
+    
+    this._dListeners.found = DeviceEventEmitter.addListener('RNZeroconfResolveFailed', service => {
+      console.log("[JSWRAPPER]RNZeroConf::RNZeroconfResolveFailed:", service);
+
+      // En ciertos casos (ej. cambios de IP, que desaparezca sin poder hacer un BYE...etc.), podría quedarse infinitamente intentando resolver un service.
+      // De esta forma, en cuanto no consiga resolver un service, lo pasará al final de la lista de pendientes de resolver, con el objetivo de no bloquear al resto de servicios pendientes.
+      const currentTransactionService = this._servicesToBeResolved[CURRENT_INDEX_BEING_RESOLVED];
+      this._servicesToBeResolved.splice(CURRENT_INDEX_BEING_RESOLVED, 1);
+      this._servicesToBeResolved.push(currentTransactionService);
+
+      // Put ongoing to false, as is available again to continue resolving
+      this._onGoingResolution = false;
+    })
 
     this._dListeners.found = DeviceEventEmitter.addListener('RNZeroconfFound', service => {
       if (!service || !service.name) { return }
