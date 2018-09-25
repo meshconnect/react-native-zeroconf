@@ -141,11 +141,16 @@ public class ZeroconfModule extends ReactContextBaseJavaModule {
     private class ZeroResolveListener implements NsdManager.ResolveListener {
         @Override
         public void onResolveFailed(NsdServiceInfo serviceInfo, int errorCode) {
-            if (errorCode == NsdManager.FAILURE_ALREADY_ACTIVE) {
-                mNsdManager.resolveService(serviceInfo, this);
-            } else {
-                String error = "Resolving service failed with code: " + errorCode;
-                sendEvent(getReactApplicationContext(), EVENT_ERROR, null, error);
+            switch (errorCode) {
+                case NsdManager.FAILURE_ALREADY_ACTIVE:
+                    Log.e(LOG_TAG, "::onResolveFailed:FAILURE ALREADY ACTIVE"+serviceInfo+errorCode);
+                    break;
+                case NsdManager.FAILURE_INTERNAL_ERROR:
+                    Log.e(LOG_TAG, "::onResolveFailed:FAILURE_INTERNAL_ERROR"+serviceInfo+errorCode);
+                    break;
+                case NsdManager.FAILURE_MAX_LIMIT:
+                    Log.e(LOG_TAG, "::onResolveFailed:FAILURE_MAX_LIMIT"+serviceInfo+errorCode);
+                    break;
             }
         }
 
