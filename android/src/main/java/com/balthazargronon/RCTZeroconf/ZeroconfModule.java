@@ -3,6 +3,7 @@ package com.balthazargronon.RCTZeroconf;
 import android.content.Context;
 import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;
+import android.util.Log;
 
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContext;
@@ -39,6 +40,7 @@ public class ZeroconfModule extends ReactContextBaseJavaModule {
     public static final String KEY_SERVICE_PORT = "port";
     public static final String KEY_SERVICE_ADDRESSES = "addresses";
     public static final String KEY_SERVICE_TXT = "txt";
+    public static final String LOG_TAG = "RNZeroconf";
 
     protected NsdManager mNsdManager;
     protected NsdManager.DiscoveryListener mDiscoveryListener;
@@ -75,6 +77,7 @@ public class ZeroconfModule extends ReactContextBaseJavaModule {
 
             @Override
             public void onDiscoveryStarted(String serviceType) {
+                Log.d(LOG_TAG, "::onDiscoveryStarted:");
                 sendEvent(getReactApplicationContext(), EVENT_START, null, null);
             }
 
@@ -85,6 +88,7 @@ public class ZeroconfModule extends ReactContextBaseJavaModule {
 
             @Override
             public void onServiceFound(NsdServiceInfo serviceInfo) {
+                Log.e(LOG_TAG, "::onServiceFound:"+serviceInfo);
                 WritableMap service = new WritableNativeMap();
                 service.putString(KEY_SERVICE_NAME, serviceInfo.getServiceName());
 
@@ -110,6 +114,7 @@ public class ZeroconfModule extends ReactContextBaseJavaModule {
             mNsdManager.stopServiceDiscovery(mDiscoveryListener);
         }
         mDiscoveryListener = null;
+        Log.d(LOG_TAG, "::stop:");
     }
 
     protected void sendEvent(ReactContext reactContext,
@@ -129,6 +134,7 @@ public class ZeroconfModule extends ReactContextBaseJavaModule {
             .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
             .emit(eventName, payload);
         }
+        Log.d(LOG_TAG, "::sendEvent"+eventName);
 
     }
 
@@ -173,11 +179,13 @@ public class ZeroconfModule extends ReactContextBaseJavaModule {
                 String notIpErrorString = "Ip not resolved";
                 sendEvent(getReactApplicationContext(), EVENT_ERROR, null, notIpErrorString);
                 mNsdManager.resolveService(serviceInfo, this);
+                Log.d(LOG_TAG, "::onServiceResolved:"+serviceInfo);
                 return;
             }
 
             service.putArray(KEY_SERVICE_ADDRESSES, addresses);
 
+            Log.d(LOG_TAG, "::onServiceResolved:"+serviceInfo);
             sendEvent(getReactApplicationContext(), EVENT_RESOLVE, service, null);
         }
     }
@@ -185,6 +193,7 @@ public class ZeroconfModule extends ReactContextBaseJavaModule {
     @Override
     public void onCatalystInstanceDestroy() {
         super.onCatalystInstanceDestroy();
+        Log.d(LOG_TAG, "::onCatalystInstanceDestroy:");
         stop();
     }
 }
