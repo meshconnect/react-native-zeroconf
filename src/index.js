@@ -11,6 +11,7 @@ export default class Zeroconf extends EventEmitter {
     this._services = {}
     this._resolvedServices = {}
     this._dListeners = {}
+    console.log("[JSWRAPPER]RNZeroConf::constructor");
 
     this.addDeviceListeners()
   }
@@ -20,6 +21,7 @@ export default class Zeroconf extends EventEmitter {
    */
   addDeviceListeners () {
 
+    console.log("[JSWRAPPER]RNZeroConf::addDeviceListeners");
     if (Object.keys(this._dListeners).length) {
       return this.emit('error', 'RNZeroconf listeners already in place.')
     }
@@ -31,6 +33,7 @@ export default class Zeroconf extends EventEmitter {
 
     this._dListeners.found = DeviceEventEmitter.addListener('RNZeroconfFound', service => {
       if (!service || !service.name) { return }
+      console.log("[JSWRAPPER]RNZeroConf::RNZeroconfFound:", service);
       const { name } = service
 
       this._services[name] = service
@@ -42,6 +45,7 @@ export default class Zeroconf extends EventEmitter {
       if (!service || !service.name) { return }
       const { name } = service
 
+      console.log("[JSWRAPPER]RNZeroConf::RNZeroconfRemove:"+name+" ", service);
       delete this._services[name]
       delete this._resolvedServices[name]
 
@@ -52,6 +56,7 @@ export default class Zeroconf extends EventEmitter {
     this._dListeners.resolved = DeviceEventEmitter.addListener('RNZeroconfResolved', service => {
       if (!service || !service.name) { return }
 
+      console.log("[JSWRAPPER]RNZeroConf::RNZeroconfResolved:", service);
       this._resolvedServices[service.name] = service
       this._services[service.name] = service
       this.emit('resolved', service)
@@ -97,6 +102,7 @@ export default class Zeroconf extends EventEmitter {
    * Stop current scan if any
    */
   async stop () {
+      console.log("[JSWRAPPER]RNZeroConf::stop()");
       await RNZeroconf.stop()
   }
 
