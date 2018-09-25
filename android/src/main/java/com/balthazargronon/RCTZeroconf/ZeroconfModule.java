@@ -42,6 +42,7 @@ public class ZeroconfModule extends ReactContextBaseJavaModule {
     public static final String KEY_SERVICE_ADDRESSES = "addresses";
     public static final String KEY_SERVICE_TXT = "txt";
     public static final String LOG_TAG = "RNZeroconf";
+    public final static String SERVICE_TYPE = "_mqtt._tcp.";
 
     protected NsdManager mNsdManager;
     protected NsdManager.DiscoveryListener mDiscoveryListener;
@@ -114,6 +115,16 @@ public class ZeroconfModule extends ReactContextBaseJavaModule {
         }
         mDiscoveryListener = null;
         Log.d(LOG_TAG, "::stop:");
+    }
+
+    @ReactMethod
+    public void resolve(String serviceInfoName) {
+        Log.d(LOG_TAG, "::resolve: stringServiceName: "+serviceInfoName);
+        NsdServiceInfo serviceInfo = new NsdServiceInfo();
+        serviceInfo.setServiceName(serviceInfoName);
+        serviceInfo.setServiceType(SERVICE_TYPE);
+        Log.d(LOG_TAG, "::resolve: stringserviceInfoName: "+serviceInfo.getServiceName());
+        mNsdManager.resolveService(serviceInfo, new ZeroResolveListener());
     }
 
     protected void sendEvent(ReactContext reactContext,
