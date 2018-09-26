@@ -62,18 +62,20 @@ public class ZeroconfModule extends ReactContextBaseJavaModule {
             mNsdManager = (NsdManager) getReactApplicationContext().getSystemService(Context.NSD_SERVICE);
         }
 
-        this.stop();
+        //this.stop();
 
         mDiscoveryListener = new NsdManager.DiscoveryListener() {
             @Override
             public void onStartDiscoveryFailed(String serviceType, int errorCode) {
                 String error = "Starting service discovery failed with code: " + errorCode;
+                //TODO: revisar qué hacer con estos casos... hacerl lo mismo que en checkServicesToBeResolved ¿? 
                 sendEvent(getReactApplicationContext(), EVENT_ERROR, null, error);
             }
 
             @Override
             public void onStopDiscoveryFailed(String serviceType, int errorCode) {
                 String error = "Stopping service discovery failed with code: " + errorCode;
+                //TODO: revisar qué hacer con estos casos... hacerl lo mismo que en checkServicesToBeResolved ¿? 
                 sendEvent(getReactApplicationContext(), EVENT_ERROR, null, error);
             }
 
@@ -85,6 +87,7 @@ public class ZeroconfModule extends ReactContextBaseJavaModule {
 
             @Override
             public void onDiscoveryStopped(String serviceType) {
+                Log.d(LOG_TAG, "::onDiscoveryStopped:");
                 sendEvent(getReactApplicationContext(), EVENT_STOP, null, null);
             }
 
@@ -110,11 +113,11 @@ public class ZeroconfModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void stop() {
-        if (mDiscoveryListener != null) {
-            mNsdManager.stopServiceDiscovery(mDiscoveryListener);
-        }
-        mDiscoveryListener = null;
         Log.d(LOG_TAG, "::stop:");
+        //if(mDiscoveryListener != null){
+            mNsdManager.stopServiceDiscovery(mDiscoveryListener);
+        //}
+        //mDiscoveryListener = null;
     }
 
     @ReactMethod
@@ -132,8 +135,11 @@ public class ZeroconfModule extends ReactContextBaseJavaModule {
                              @Nullable Object params,
                              @Nullable String errorString
                              ) {
+        Log.d(LOG_TAG, "::sendEvent"+eventName);
         if (errorString == null){
-                    reactContext
+                Log.d(LOG_TAG, "::sendEvent:emit:eventName: "+eventName);
+                Log.d(LOG_TAG, "::sendEvent:emit:params: "+params);
+                reactContext
                 .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                 .emit(eventName, params);
         }else{
@@ -144,13 +150,12 @@ public class ZeroconfModule extends ReactContextBaseJavaModule {
             .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
             .emit(eventName, payload);
         }
-        Log.d(LOG_TAG, "::sendEvent"+eventName);
-
     }
 
-    private class ZeroResolveListener implements NsdManager.ResolveListener {
+    public class ZeroResolveListener implements NsdManager.ResolveListener {
         @Override
         public void onResolveFailed(NsdServiceInfo serviceInfo, int errorCode) {
+        
             switch (errorCode) {
                 case NsdManager.FAILURE_ALREADY_ACTIVE:
                     Log.e(LOG_TAG, "::onResolveFailed:FAILURE ALREADY ACTIVE"+serviceInfo+errorCode);
@@ -162,7 +167,9 @@ public class ZeroconfModule extends ReactContextBaseJavaModule {
                     Log.e(LOG_TAG, "::onResolveFailed:FAILURE_MAX_LIMIT"+serviceInfo+errorCode);
                     break;
             }
-            sendEvent(getReactApplicationContext(), EVENT_RESOLVE_FAILED, serviceInfo, null);
+            WritableMap service = new WritableNativeMap();
+            service.putString(KEY_SERVICE_NAME, serviceInfo.getServiceName());
+            sendEvent(getReactApplicationContext(), EVENT_RESOLVE_FAILED, service, null);
         }
 
         @Override
@@ -189,6 +196,7 @@ public class ZeroconfModule extends ReactContextBaseJavaModule {
               } catch (UnsupportedEncodingException e) {
                 String error = "Failed to encode txtRecord: " + e;
                 //TODO: Pendiente de ver si lo quitamos o no
+                //TODO: revisar qué hacer con estos casos... hacerl lo mismo que en checkServicesToBeResolved ¿? 
                 sendEvent(getReactApplicationContext(), EVENT_ERROR, null, error);
               }
             }
@@ -210,4 +218,27 @@ public class ZeroconfModule extends ReactContextBaseJavaModule {
         Log.d(LOG_TAG, "::onCatalystInstanceDestroy:");
         stop();
     }
+    /*
+    class PrimeThread extends Thread {
+        NsdServiceInfo serviceInfo;
+        ZeroConfModule zeroconfModule;
+
+        PrimeThread(NsdServiceInfo serviceInfo, ZeroConfModule zeroconfModule) {
+            this.serviceInfo = serviceInfo;
+            this.zeroconfModule = zeroconfModule;
+        }
+
+        public void run() {
+            // compute primes larger than minPrime
+            try{
+                Thread.sleep(5000);  
+            }
+            catch(InterruptedException e){
+            
+            }
+            mNsdManager.resolveService(serviceInfo, new zeroconfModule.ZeroResolveListener());
+        }
+    } */
 }
+
+
