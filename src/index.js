@@ -16,6 +16,9 @@ export default class Zeroconf extends EventEmitter {
     this._dListeners = {}
     this._servicesToBeResolved = [];
     this._onGoingResolution = false;
+    this._type = '';
+    this._protocol= '';
+    this._domain = '';
     
     console.log("[JSWRAPPER]RNZeroConf::constructor");
 
@@ -119,6 +122,9 @@ export default class Zeroconf extends EventEmitter {
   scan (type = 'http', protocol = 'tcp', domain = 'local.') {
     this._services = {}
     this._resolvedServices = {}
+    this._type = type;
+    this._protocol = protocol;
+    this._domain = domain;
     this.emit('start')
     RNZeroconf.scan(type, protocol, domain)
   }
