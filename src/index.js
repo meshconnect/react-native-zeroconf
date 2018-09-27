@@ -37,9 +37,18 @@ export default class Zeroconf extends EventEmitter {
     }
 
     this._dListeners.start = DeviceEventEmitter.addListener('RNZeroconfStart', () => this.emit('start'))
-    this._dListeners.stop = DeviceEventEmitter.addListener('RNZeroconfStop', () => this.emit('stop'))
 
-    this._dListeners.error = DeviceEventEmitter.addListener('RNZeroconfError', (err) => this.emit('errorEvent', err))
+    this._dListeners.stop = DeviceEventEmitter.addListener('RNZeroconfStop', () => {
+      console.log("[JSWRAPPER]RNZeroConf::RNZeroconfStop:");
+      this.emit('stop')
+    
+    })
+
+    this._dListeners.error = DeviceEventEmitter.addListener('RNZeroconfError', (err) => {
+      console.log("[JSWRAPPER]RNZeroConf::RNZeroconfError:");
+      this.emit('errorEvent', err)
+    
+    })
     
     this._dListeners.found = DeviceEventEmitter.addListener('RNZeroconfResolveFailed', service => {
       console.log("[JSWRAPPER]RNZeroConf::RNZeroconfResolveFailed:", service);
