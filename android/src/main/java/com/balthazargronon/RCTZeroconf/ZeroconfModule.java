@@ -67,12 +67,14 @@ public class ZeroconfModule extends ReactContextBaseJavaModule {
             @Override
             public void onStartDiscoveryFailed(String serviceType, int errorCode) {
                 String error = "Starting service discovery failed with code: " + errorCode;
+                //TODO: revisar qué hacer con estos casos... hacerl lo mismo que en checkServicesToBeResolved ¿? 
                 sendEvent(getReactApplicationContext(), EVENT_ERROR, null, error);
             }
 
             @Override
             public void onStopDiscoveryFailed(String serviceType, int errorCode) {
                 String error = "Stopping service discovery failed with code: " + errorCode;
+                //TODO: revisar qué hacer con estos casos... hacerl lo mismo que en checkServicesToBeResolved ¿? 
                 sendEvent(getReactApplicationContext(), EVENT_ERROR, null, error);
             }
 
@@ -190,6 +192,7 @@ public class ZeroconfModule extends ReactContextBaseJavaModule {
               } catch (UnsupportedEncodingException e) {
                 String error = "Failed to encode txtRecord: " + e;
                 //TODO: Pendiente de ver si lo quitamos o no
+                //TODO: revisar qué hacer con estos casos... hacerl lo mismo que en checkServicesToBeResolved ¿? 
                 sendEvent(getReactApplicationContext(), EVENT_ERROR, null, error);
               }
             }
@@ -212,3 +215,5 @@ public class ZeroconfModule extends ReactContextBaseJavaModule {
         stop();
     }
 }
+
+
