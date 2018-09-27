@@ -84,6 +84,7 @@ public class ZeroconfModule extends ReactContextBaseJavaModule {
 
             @Override
             public void onDiscoveryStopped(String serviceType) {
+                Log.d(LOG_TAG, "::onDiscoveryStopped:");
                 sendEvent(getReactApplicationContext(), EVENT_STOP, null, null);
             }
 
@@ -128,8 +129,11 @@ public class ZeroconfModule extends ReactContextBaseJavaModule {
                              @Nullable Object params,
                              @Nullable String errorString
                              ) {
+        Log.d(LOG_TAG, "::sendEvent"+eventName);
         if (errorString == null){
                     reactContext
+                Log.d(LOG_TAG, "::sendEvent:emit:eventName: "+eventName);
+                Log.d(LOG_TAG, "::sendEvent:emit:params: "+params);
                 .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                 .emit(eventName, params);
         }else{
