@@ -110,11 +110,8 @@ public class ZeroconfModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void stop() {
-        if (mDiscoveryListener != null) {
-            mNsdManager.stopServiceDiscovery(mDiscoveryListener);
-        }
-        mDiscoveryListener = null;
         Log.d(LOG_TAG, "::stop:");
+        mNsdManager.stopServiceDiscovery(mDiscoveryListener);
     }
 
     @ReactMethod
