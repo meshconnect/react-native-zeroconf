@@ -180,7 +180,7 @@ export default class Zeroconf extends EventEmitter {
         const timeSpentInOnGoingTransaction = currentTimestamp - outerThis._onGoingResolutionTimeStamp;
         if(timeSpentInOnGoingTransaction > 20000){
           console.log("[JSWRAPPER]RNZeroConf:: transaction >= 10 seconds. DESTROYING RNZEROCONF NATIVE MODULE");
-          this.crash();
+          this.emit('zeroConfModuleHasFrozen');
           /*
           outerThis.stop();
           //TODO: Ver cómo mejorar esto esperando a un evento stop desde JAVA.
