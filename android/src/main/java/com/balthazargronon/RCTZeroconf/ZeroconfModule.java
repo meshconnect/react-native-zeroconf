@@ -131,9 +131,9 @@ public class ZeroconfModule extends ReactContextBaseJavaModule {
                              ) {
         Log.d(LOG_TAG, "::sendEvent"+eventName);
         if (errorString == null){
-                    reactContext
                 Log.d(LOG_TAG, "::sendEvent:emit:eventName: "+eventName);
                 Log.d(LOG_TAG, "::sendEvent:emit:params: "+params);
+                reactContext
                 .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                 .emit(eventName, params);
         }else{
@@ -144,13 +144,12 @@ public class ZeroconfModule extends ReactContextBaseJavaModule {
             .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
             .emit(eventName, payload);
         }
-        Log.d(LOG_TAG, "::sendEvent"+eventName);
-
     }
 
-    private class ZeroResolveListener implements NsdManager.ResolveListener {
+    public class ZeroResolveListener implements NsdManager.ResolveListener {
         @Override
         public void onResolveFailed(NsdServiceInfo serviceInfo, int errorCode) {
+        
             switch (errorCode) {
                 case NsdManager.FAILURE_ALREADY_ACTIVE:
                     Log.e(LOG_TAG, "::onResolveFailed:FAILURE ALREADY ACTIVE"+serviceInfo+errorCode);
@@ -162,7 +161,9 @@ public class ZeroconfModule extends ReactContextBaseJavaModule {
                     Log.e(LOG_TAG, "::onResolveFailed:FAILURE_MAX_LIMIT"+serviceInfo+errorCode);
                     break;
             }
-            sendEvent(getReactApplicationContext(), EVENT_RESOLVE_FAILED, serviceInfo, null);
+            WritableMap service = new WritableNativeMap();
+            service.putString(KEY_SERVICE_NAME, serviceInfo.getServiceName());
+            sendEvent(getReactApplicationContext(), EVENT_RESOLVE_FAILED, service, null);
         }
 
         @Override
