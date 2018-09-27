@@ -40,10 +40,5 @@
     "extends": [
       "zavatta"
     ]
-  },
-  "babel": {
-    "presets": [
-      "react-native"
-    ]
   }
 }
