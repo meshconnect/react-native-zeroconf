@@ -62,7 +62,6 @@ public class ZeroconfModule extends ReactContextBaseJavaModule {
             mNsdManager = (NsdManager) getReactApplicationContext().getSystemService(Context.NSD_SERVICE);
         }
 
-        this.stop();
 
         mDiscoveryListener = new NsdManager.DiscoveryListener() {
             @Override
