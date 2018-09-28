@@ -83,20 +83,19 @@ export default class Zeroconf extends EventEmitter {
       delete this._services[service.name]
       delete this._resolvedServices[service.name]
 
-      if(this._servicesToBeResolved.length > 0){
-        if((!this._onGoingResolution) || (this._servicesToBeResolved[CURRENT_INDEX_BEING_RESOLVED].name != service.name)){
-            console.log("[JSWRAPPER]RNZeroConf::RNZeroconfRemove: ('if' clause is being executed): onGoingResolution=", this._onGoingResolution, service.name);
-            for(let i = 0; i < this._servicesToBeResolved.length; i++){
-                if(this._servicesToBeResolved[i].name == service.name){
-                    this._servicesToBeResolved.splice(i, 1);
-                }
-            }
-        }else{
-            // si entramos aquí, es porque hay una transacción en curso y además el elemento que nos indica el sistema que tenemos que borrar es el de la transacción en curso.
-            console.log("[JSWRAPPER]RNZeroConf::RNZeroconfRemove: ('else' clause is being executed)"+service.name);
-            this._onGoingResolutionIsInvalid = true;
-            this._servicesToBeResolved.splice(CURRENT_INDEX_BEING_RESOLVED, 1);
-        }
+      // Remove from pending to remove
+      if((!this._onGoingResolution) || (this._servicesToBeResolved[CURRENT_INDEX_BEING_RESOLVED].name != service.name)){
+          console.log("[JSWRAPPER]RNZeroConf::RNZeroconfRemove: ('if' clause is being executed)"+service.name);
+          for(let i = 0; i < this._servicesToBeResolved.length; i++){
+              if(this._servicesToBeResolved[i].name == service.name){
+                  this._servicesToBeResolved.splice(i, 1);
+              }
+          }
+      }else{
+          // si entramos aquí, es porque hay una transacción en curso y además el elemento que nos indica el sistema que tenemos que borrar es el de la transacción en curso.
+          console.log("[JSWRAPPER]RNZeroConf::RNZeroconfRemove: ('else' clause is being executed)"+service.name);
+          this._onGoingResolutionIsInvalid = true;
+          this._servicesToBeResolved.splice(CURRENT_INDEX_BEING_RESOLVED, 1);
       }
 
       this.emit('remove', this._resolvedServices)
