@@ -3,7 +3,7 @@ import { EventEmitter } from 'events'
 
 const RNZeroconf = NativeModules.RNZeroconf
 
-const RESOLUTION_TIME_INTERVAL = 500;
+const RESOLUTION_TIME_INTERVAL = 300;
 const CURRENT_INDEX_BEING_RESOLVED = 0;
 
 export default class Zeroconf extends EventEmitter {
@@ -21,6 +21,7 @@ export default class Zeroconf extends EventEmitter {
     this._type = '';
     this._protocol= '';
     this._domain = '';
+    this._resolveInProgress = false;
     
     this.addDeviceListeners();
     this.checkServicesToBeResolved();
@@ -51,16 +52,18 @@ export default class Zeroconf extends EventEmitter {
     
     })
     
-    this._dListeners.found = DeviceEventEmitter.addListener('RNZeroconfResolveFailed', (service) => {
-      console.log("[JSWRAPPER]RNZeroConf::RNZeroconfResolveFailed:", service);
+    this._dListeners.resolveFailed = DeviceEventEmitter.addListener('RNZeroconfResolveFailed', (service) => {
+      console.log("[JSWRAPPER]RNZeroConf::RNZeroconfResolveFailed: triggered", service);
 
       if(!this._onGoingResolutionIsInvalid){
+        console.log("[JSWRAPPER]RNZeroConf::RNZeroconfResolveFailed: Skipping for now, moving at the end of _servicesToBeResolved. Will try again later. ", service);
         // En ciertos casos (ej. cambios de IP, que desaparezca sin poder hacer un BYE...etc.), podría quedarse infinitamente intentando resolver un service.
         // De esta forma, en cuanto no consiga resolver un service, lo pasará al final de la lista de pendientes de resolver, con el objetivo de no bloquear al resto de servicios pendientes.
         const currentTransactionService = this._servicesToBeResolved[CURRENT_INDEX_BEING_RESOLVED];
         this._servicesToBeResolved.splice(CURRENT_INDEX_BEING_RESOLVED, 1);
         this._servicesToBeResolved.push(currentTransactionService);
       }else{
+        console.log("[JSWRAPPER]RNZeroConf::RNZeroconfResolveFailed: Current resolve transaction had been marked as invalid. Ignoring this notification.", service);
         this._onGoingResolutionIsInvalid = false;
       }
       // Put ongoing to false, as is available again to continue resolving
@@ -83,19 +86,18 @@ export default class Zeroconf extends EventEmitter {
       delete this._services[service.name]
       delete this._resolvedServices[service.name]
 
+      if(this._onGoingResolution && !this._onGoingResolutionIsInvalid && this._servicesToBeResolved[CURRENT_INDEX_BEING_RESOLVED].name == service.name){
+          // si entramos aquí, es porque hay una transacción en curso y además el elemento que nos indica el sistema que tenemos que borrar es el de la transacción en curso.
+          console.log("[JSWRAPPER]RNZeroConf::RNZeroconfRemove: Marking current resolve transaction as invalid "+service.name);
+          this._onGoingResolutionIsInvalid = true;
+      }      
+
       if(this._servicesToBeResolved.length > 0){
-        if((!this._onGoingResolution) || (this._servicesToBeResolved[CURRENT_INDEX_BEING_RESOLVED].name != service.name)){
-            console.log("[JSWRAPPER]RNZeroConf::RNZeroconfRemove: ('if' clause is being executed): onGoingResolution=", this._onGoingResolution, service.name);
-            for(let i = 0; i < this._servicesToBeResolved.length; i++){
-                if(this._servicesToBeResolved[i].name == service.name){
-                    this._servicesToBeResolved.splice(i, 1);
-                }
+        for(let i = 0; i < this._servicesToBeResolved.length; i++){
+            if(this._servicesToBeResolved[i].name == service.name){
+              console.log("[JSWRAPPER]RNZeroConf::RNZeroconfRemove: Removing element from _servicesToBeResolved: ", service.name);
+              this._servicesToBeResolved.splice(i, 1);
             }
-        }else{
-            // si entramos aquí, es porque hay una transacción en curso y además el elemento que nos indica el sistema que tenemos que borrar es el de la transacción en curso.
-            console.log("[JSWRAPPER]RNZeroConf::RNZeroconfRemove: ('else' clause is being executed)"+service.name);
-            this._onGoingResolutionIsInvalid = true;
-            this._servicesToBeResolved.splice(CURRENT_INDEX_BEING_RESOLVED, 1);
         }
       }
 
@@ -103,8 +105,9 @@ export default class Zeroconf extends EventEmitter {
     })
 
     this._dListeners.resolved = DeviceEventEmitter.addListener('RNZeroconfResolved', (service) => {
-      console.log("[JSWRAPPER]RNZeroConf::RNZeroconfResolved:", service);
+      console.log("[JSWRAPPER]RNZeroConf::RNZeroconfResolved: triggered", service);
       if(!this._onGoingResolutionIsInvalid){
+        console.log("[JSWRAPPER]RNZeroConf::RNZeroconfResolved: Adding resolved service to _resolvedServices", service);
         this._resolvedServices[service.name] = service
         
         // Removes the first element selected in CURRENT_INDEX_BEING_RESOLVED of _servicesToBeResolved.
@@ -113,6 +116,7 @@ export default class Zeroconf extends EventEmitter {
         console.log("[JSWRAPPER]RNZeroConf::RNZeroconfResolved: _resolvedServices:", JSON.stringify(this._resolvedServices));
         this.emit('resolved', this._resolvedServices)
       }else{
+        console.log("[JSWRAPPER]RNZeroConf::RNZeroconfResolved: Current resolve transaction had been marked as invalid. Ignoring this notification.", service);
         this._onGoingResolutionIsInvalid = false;
       }
       // Put ongoing to false, as is available again to continue resolving
@@ -174,15 +178,17 @@ export default class Zeroconf extends EventEmitter {
     let outerThis = this;
     //Cada segundo manda a resolver
     setInterval(function(){
-        console.log("[JSWRAPPER]RNZeroConf::checkServicesToBeResolved: fired");
-        if(outerThis._onGoingResolution === false){
-          console.log("[JSWRAPPER]RNZeroConf::checkServicesToBeResolved: ongoinResolution=false");
-            if(outerThis._servicesToBeResolved.length > 0){
-              console.log("[JSWRAPPER]RNZeroConf::checkServicesToBeResolved:_onGoingResolution=false. Pending resolutions "+outerThis._servicesToBeResolved.length, JSON.stringify(outerThis._servicesToBeResolved));
-              console.log("[JSWRAPPER]RNZeroConf::checkServicesToBeResolved:_onGoingResolution=false. Is going to resolve... ", JSON.stringify(outerThis._servicesToBeResolved[CURRENT_INDEX_BEING_RESOLVED]));
-              outerThis._startOnGoingTransaction();
-              RNZeroconf.resolve(outerThis._servicesToBeResolved[CURRENT_INDEX_BEING_RESOLVED].name)
-            }
+        if(!outerThis._onGoingResolution){
+          if(outerThis._servicesToBeResolved.length > 0){
+            console.log("[JSWRAPPER]RNZeroConf::checkServicesToBeResolved:_onGoingResolution=false. Pending resolutions "+outerThis._servicesToBeResolved.length, JSON.stringify(outerThis._servicesToBeResolved));
+            console.log("[JSWRAPPER]RNZeroConf::checkServicesToBeResolved:_onGoingResolution=false. Is going to resolve... ", JSON.stringify(outerThis._servicesToBeResolved[CURRENT_INDEX_BEING_RESOLVED]));
+            outerThis._startOnGoingTransaction();
+            RNZeroconf.resolve(outerThis._servicesToBeResolved[CURRENT_INDEX_BEING_RESOLVED].name)
+          }else{
+            console.log("[JSWRAPPER]RNZeroConf::checkServicesToBeResolved: fired, no pending services to be resolved.");
+          }
+        }else{
+          console.log("[JSWRAPPER]RNZeroConf::checkServicesToBeResolved: fired, ongoingResolution=true. Skipping...");
         }
     }, RESOLUTION_TIME_INTERVAL);
   } 
@@ -191,12 +197,11 @@ export default class Zeroconf extends EventEmitter {
     let outerThis = this;
     setInterval(function(){
       console.log("[JSWRAPPER]RNZeroConf::_checkIfNativeModuleHasFrozen: fired");
-      if(outerThis._onGoingResolution){
-        console.log("[JSWRAPPER]RNZeroConf::_checkIfNativeModuleHasFrozen: _onGoingResolution true");
+      if(outerThis._resolveInProgress){
         const currentTimestamp = new Date();
         const timeSpentInOnGoingTransaction = currentTimestamp - outerThis._onGoingResolutionTimeStamp;
         if(timeSpentInOnGoingTransaction > 20000){
-          console.log("[JSWRAPPER]RNZeroConf:: transaction >= 10 seconds. DESTROYING RNZEROCONF NATIVE MODULE");
+          console.log("[JSWRAPPER]RNZeroConf::_checkIfNativeModuleHasFrozen: _resolveInProgress true. Time spent in ongoing transaction > 20 secs. APP RESTART NEEDED...");
           outerThis.emit('zeroConfModuleHasFrozen');
           /*
           outerThis.stop();
@@ -205,22 +210,37 @@ export default class Zeroconf extends EventEmitter {
             outerThis._onGoingResolution = false;
             //outerThis.scan(outerThis._type, outerThis._protocol, outerThis._domain);
           }, 5000); */
+        }else{
+          console.log("[JSWRAPPER]RNZeroConf::_checkIfNativeModuleHasFrozen: _resolveInProgress true. Time spent in ongoing transaction < 20 secs. No action required.");
         }
+      }else{
+        console.log("[JSWRAPPER]RNZeroConf::_checkIfNativeModuleHasFrozen: _resolveInProgress false, nothing to check.");
       }
     }, 10000);
   }
 
   _finishOnGoingTransaction() {
+    console.log("[JSWRAPPER]RNZeroConf::_finishOnGoingTransaction init");
+    this._resolveInProgress = false;
     let outerThis = this;
-    setTimeout(function(){
-      console.log("[JSWRAPPER]RNZeroConf::_finishOnGoingTransaction executed");
-      outerThis._onGoingResolution = false;
-    }, RESOLUTION_TIME_INTERVAL);
+    //setTimeout(function(){
+      //console.log("[JSWRAPPER]RNZeroConf::_finishOnGoingTransaction triggered");
+    outerThis._onGoingResolution = false;
+    //}, RESOLUTION_TIME_INTERVAL);
   }
 
   _startOnGoingTransaction(){
     this._onGoingResolution = true;
+    this._resolveInProgress = true;
     this._onGoingResolutionTimeStamp = new Date();
+  }
+
+  _compare(a, b){
+    if (a.name < b.name)
+    return -1;
+    if (a.name > b.name)
+      return 1;
+    return 0;
   }
 
 }
