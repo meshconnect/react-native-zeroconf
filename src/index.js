@@ -3,7 +3,7 @@ import { EventEmitter } from 'events'
 
 const RNZeroconf = NativeModules.RNZeroconf
 
-const RESOLUTION_TIME_INTERVAL = 1000;
+const RESOLUTION_TIME_INTERVAL = 500;
 const CURRENT_INDEX_BEING_RESOLVED = 0;
 
 export default class Zeroconf extends EventEmitter {
@@ -167,7 +167,7 @@ export default class Zeroconf extends EventEmitter {
               RNZeroconf.resolve(outerThis._servicesToBeResolved[CURRENT_INDEX_BEING_RESOLVED].name)
             }
         }
-    }, 500);
+    }, RESOLUTION_TIME_INTERVAL);
   } 
 
   _checkIfNativeModuleHasFrozen () {
