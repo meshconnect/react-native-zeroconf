@@ -51,8 +51,7 @@ export default class Zeroconf extends EventEmitter {
     
     })
     
-    this._dListeners.found = DeviceEventEmitter.addListener('RNZeroconfResolveFailed', (service) => {
-      console.log("[JSWRAPPER]RNZeroConf::RNZeroconfResolveFailed:", service);
+    this._dListeners.resolveFailed = DeviceEventEmitter.addListener('RNZeroconfResolveFailed', (service) => {
       console.log("[JSWRAPPER]RNZeroConf::RNZeroconfResolveFailed: triggered", service);
 
       if(!this._onGoingResolutionIsInvalid){
