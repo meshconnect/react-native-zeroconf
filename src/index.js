@@ -143,10 +143,10 @@ export default class Zeroconf extends EventEmitter {
 
   /**
    * Get all the services fully resolved
-   */
+   
   getResolvedServices () {
     return this._resolvedServices
-  }
+  }*/
 
   /**
    * Scan for Zeroconf services,
