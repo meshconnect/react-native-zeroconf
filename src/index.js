@@ -73,7 +73,6 @@ export default class Zeroconf extends EventEmitter {
         this._onGoingResolutionIsInvalid = false;
       }
       // Put ongoing to false, as is available again to continue resolving
-      //this._onGoingResolution = false;
       this._finishOnGoingTransaction();
     })
 
@@ -126,7 +125,6 @@ export default class Zeroconf extends EventEmitter {
         this._onGoingResolutionIsInvalid = false;
       }
       // Put ongoing to false, as is available again to continue resolving
-      //this._onGoingResolution = false;
       this._finishOnGoingTransaction();
     })
 
@@ -227,11 +225,7 @@ export default class Zeroconf extends EventEmitter {
 
   _finishOnGoingTransaction() {
     console.log("[JSWRAPPER]RNZeroConf::_finishOnGoingTransaction init");
-    let outerThis = this;
-    //setTimeout(function(){
-      //console.log("[JSWRAPPER]RNZeroConf::_finishOnGoingTransaction triggered");
-    outerThis._onGoingResolution = false;
-    //}, RESOLUTION_TIME_INTERVAL);
+    this._onGoingResolution = false;
   }
 
   _startOnGoingTransaction(){
