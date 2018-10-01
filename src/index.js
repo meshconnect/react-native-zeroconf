@@ -63,6 +63,12 @@ export default class Zeroconf extends EventEmitter {
         const currentTransactionService = this._servicesToBeResolved[CURRENT_INDEX_BEING_RESOLVED];
         this._servicesToBeResolved.splice(CURRENT_INDEX_BEING_RESOLVED, 1);
         this._servicesToBeResolved.push(currentTransactionService);
+
+        if(service.name in this._resolvedServices){
+          console.log("[JSWRAPPER]RNZeroConf::RNZeroconfResolveFailed: Removing service from list of resolved services.", service);
+          delete this._resolvedServices[service.name];
+          this.emit('remove', this._resolvedServices);
+        }
       }else{
         console.log("[JSWRAPPER]RNZeroConf::RNZeroconfResolveFailed: Current resolve transaction had been marked as invalid. Ignoring this notification.", service);
         this._onGoingResolutionIsInvalid = false;
