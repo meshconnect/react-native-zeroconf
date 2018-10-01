@@ -66,7 +66,7 @@ export default class Zeroconf extends EventEmitter {
         if(service.name in this._resolvedServices){
           console.log("[JSWRAPPER]RNZeroConf::RNZeroconfResolveFailed: Removing service from list of resolved services.", service);
           delete this._resolvedServices[service.name];
-          this.emit('remove', this._resolvedServices);
+          this._sortAndEmit('remove', this._resolvedServices);
         }
       }else{
         console.log("[JSWRAPPER]RNZeroConf::RNZeroconfResolveFailed: Current resolve transaction had been marked as invalid. Ignoring this notification.", service);
@@ -80,7 +80,7 @@ export default class Zeroconf extends EventEmitter {
       console.log("[JSWRAPPER]RNZeroConf::RNZeroconfFound:", service);
 
       this._services[service.name] = service
-      this.emit('found', this._services)
+      this._sortAndEmit('found', this._services);
 
       // Lógica para resolver los servicios nada más recibirlos
       this._servicesToBeResolved.push(service);
@@ -106,7 +106,7 @@ export default class Zeroconf extends EventEmitter {
         }
       }
 
-      this.emit('remove', this._resolvedServices)
+      this._sortAndEmit('remove', this._resolvedServices);
     })
 
     this._dListeners.resolved = DeviceEventEmitter.addListener('RNZeroconfResolved', (service) => {
@@ -119,7 +119,7 @@ export default class Zeroconf extends EventEmitter {
         this._servicesToBeResolved.splice(CURRENT_INDEX_BEING_RESOLVED, 1);
 
         console.log("[JSWRAPPER]RNZeroConf::RNZeroconfResolved: _resolvedServices:", JSON.stringify(this._resolvedServices));
-        this.emit('resolved', this._resolvedServices)
+        this._sortAndEmit('resolved', this._resolvedServices);
       }else{
         console.log("[JSWRAPPER]RNZeroConf::RNZeroconfResolved: Current resolve transaction had been marked as invalid. Ignoring this notification.", service);
         this._onGoingResolutionIsInvalid = false;
@@ -252,4 +252,21 @@ export default class Zeroconf extends EventEmitter {
       }
     }, 60000);
   }
+
+  _sortAndEmit(emitName, servicesDict){
+    let serviceNamesArray = [];
+    for(let serviceName in servicesDict){
+      serviceNamesArray.push(serviceName);
+    }
+    
+    let sortedServiceNamesArray = serviceNamesArray.sort();
+    let sortedServicesArray = [];
+
+    for (let i = 0; i < sortedServiceNamesArray.length; i++){
+      sortedServicesArray.push(servicesDict[sortedServiceNamesArray[i]]);
+    }
+
+    this.emit(emitName, sortedServicesArray);
+  }
+
 }
