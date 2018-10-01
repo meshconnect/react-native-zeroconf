@@ -21,7 +21,6 @@ export default class Zeroconf extends EventEmitter {
     this._type = '';
     this._protocol= '';
     this._domain = '';
-    this._resolveInProgress = false;
     
     this.addDeviceListeners();
     this.checkServicesToBeResolved();
@@ -204,11 +203,11 @@ export default class Zeroconf extends EventEmitter {
     let outerThis = this;
     setInterval(function(){
       console.log("[JSWRAPPER]RNZeroConf::_checkIfNativeModuleHasFrozen: fired");
-      if(outerThis._resolveInProgress){
+      if(outerThis._onGoingResolution){
         const currentTimestamp = new Date();
         const timeSpentInOnGoingTransaction = currentTimestamp - outerThis._onGoingResolutionTimeStamp;
         if(timeSpentInOnGoingTransaction > 20000){
-          console.log("[JSWRAPPER]RNZeroConf::_checkIfNativeModuleHasFrozen: _resolveInProgress true. Time spent in ongoing transaction > 20 secs. APP RESTART NEEDED...");
+          console.log("[JSWRAPPER]RNZeroConf::_checkIfNativeModuleHasFrozen: _onGoingResolution true. Time spent in ongoing transaction > 20 secs. APP RESTART NEEDED...");
           outerThis.emit('zeroConfModuleHasFrozen');
           /*
           outerThis.stop();
@@ -218,17 +217,16 @@ export default class Zeroconf extends EventEmitter {
             //outerThis.scan(outerThis._type, outerThis._protocol, outerThis._domain);
           }, 5000); */
         }else{
-          console.log("[JSWRAPPER]RNZeroConf::_checkIfNativeModuleHasFrozen: _resolveInProgress true. Time spent in ongoing transaction < 20 secs. No action required.");
+          console.log("[JSWRAPPER]RNZeroConf::_checkIfNativeModuleHasFrozen: _onGoingResolution true. Time spent in ongoing transaction < 20 secs. No action required.");
         }
       }else{
-        console.log("[JSWRAPPER]RNZeroConf::_checkIfNativeModuleHasFrozen: _resolveInProgress false, nothing to check.");
+        console.log("[JSWRAPPER]RNZeroConf::_checkIfNativeModuleHasFrozen: _onGoingResolution false, nothing to check.");
       }
     }, 10000);
   }
 
   _finishOnGoingTransaction() {
     console.log("[JSWRAPPER]RNZeroConf::_finishOnGoingTransaction init");
-    this._resolveInProgress = false;
     let outerThis = this;
     //setTimeout(function(){
       //console.log("[JSWRAPPER]RNZeroConf::_finishOnGoingTransaction triggered");
@@ -238,7 +236,6 @@ export default class Zeroconf extends EventEmitter {
 
   _startOnGoingTransaction(){
     this._onGoingResolution = true;
-    this._resolveInProgress = true;
     this._onGoingResolutionTimeStamp = new Date();
   }
 
