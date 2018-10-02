@@ -210,12 +210,14 @@ public class ZeroconfModule extends ReactContextBaseJavaModule {
         }
     }
 
+    /*
     @Override
     public void onCatalystInstanceDestroy() {
         super.onCatalystInstanceDestroy();
         Log.d(LOG_TAG, "::onCatalystInstanceDestroy:");
         stop();
     }
+    */
 }
 
 
