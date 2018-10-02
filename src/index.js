@@ -25,7 +25,6 @@ export default class Zeroconf extends EventEmitter {
     this.addDeviceListeners();
     this.checkServicesToBeResolved();
     this._checkIfNativeModuleHasFrozen();
-    this.resolvedServicesWatchdog();
   }
 
   /**
@@ -231,26 +230,6 @@ export default class Zeroconf extends EventEmitter {
   _startOnGoingTransaction(){
     this._onGoingResolution = true;
     this._onGoingResolutionTimeStamp = new Date();
-  }
-
-  resolvedServicesWatchdog() {
-    console.log("[JSWRAPPER]RNZeroConf::resolvedServicesWatchdog init");
-    let outerThis = this;
-    setInterval(function(){
-      if(outerThis._servicesToBeResolved.length == 0){
-        if(Object.keys(outerThis._services).length > 0){
-          //TODO: Analizar si hay una forma más eficiente de iterar, por ejemplo con el "forIn".
-          console.log("[JSWRAPPER]RNZeroConf::resolvedServicesWatchdog Checking for changes on found services: ", outerThis._services);
-          Object.entries(outerThis._services).map(([key, v]) => {
-            outerThis._servicesToBeResolved.push(v);
-          });
-        }else{
-          console.log("[JSWRAPPER]RNZeroConf::resolvedServicesWatchdog: No services found. Nothing to check.");
-        }
-      }else{
-        console.log("[JSWRAPPER]RNZeroConf::resolvedServicesWatchdog There are pending services yet to be resolved. Skipping...");
-      }
-    }, 60000);
   }
 
   _sortAndEmit(emitName, servicesDict){
