@@ -204,8 +204,8 @@ export default class Zeroconf extends EventEmitter {
       if(outerThis._onGoingResolution){
         const currentTimestamp = new Date();
         const timeSpentInOnGoingTransaction = currentTimestamp - outerThis._onGoingResolutionTimeStamp;
-        if(timeSpentInOnGoingTransaction > 20000){
-          console.log("[JSWRAPPER]RNZeroConf::_checkIfNativeModuleHasFrozen: _onGoingResolution true. Time spent in ongoing transaction > 20 secs. APP RESTART NEEDED...");
+        if(timeSpentInOnGoingTransaction > 30000){
+          console.log("[JSWRAPPER]RNZeroConf::_checkIfNativeModuleHasFrozen: _onGoingResolution true. Time spent in ongoing transaction > 30 secs. APP RESTART NEEDED...");
           outerThis.emit('zeroConfModuleHasFrozen');
           /*
           outerThis.stop();
@@ -215,7 +215,7 @@ export default class Zeroconf extends EventEmitter {
             //outerThis.scan(outerThis._type, outerThis._protocol, outerThis._domain);
           }, 5000); */
         }else{
-          console.log("[JSWRAPPER]RNZeroConf::_checkIfNativeModuleHasFrozen: _onGoingResolution true. Time spent in ongoing transaction < 20 secs. No action required.");
+          console.log("[JSWRAPPER]RNZeroConf::_checkIfNativeModuleHasFrozen: _onGoingResolution true. Time spent in ongoing transaction < 30 secs. No action required.");
         }
       }else{
         console.log("[JSWRAPPER]RNZeroConf::_checkIfNativeModuleHasFrozen: _onGoingResolution false, nothing to check.");
@@ -240,8 +240,8 @@ export default class Zeroconf extends EventEmitter {
       if(outerThis._servicesToBeResolved.length == 0){
         if(Object.keys(outerThis._services).length > 0){
           //TODO: Analizar si hay una forma más eficiente de iterar, por ejemplo con el "forIn".
+          console.log("[JSWRAPPER]RNZeroConf::resolvedServicesWatchdog Checking for changes on found services: ", outerThis._services);
           Object.entries(outerThis._services).map(([key, v]) => {
-            console.log("[JSWRAPPER]RNZeroConf::resolvedServicesWatchdog Trying to resolve services again.", v);
             outerThis._servicesToBeResolved.push(v);
           });
         }else{
