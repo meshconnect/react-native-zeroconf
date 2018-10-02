@@ -66,6 +66,7 @@ public class ZeroconfModule extends ReactContextBaseJavaModule {
         mDiscoveryListener = new NsdManager.DiscoveryListener() {
             @Override
             public void onStartDiscoveryFailed(String serviceType, int errorCode) {
+                Log.d(LOG_TAG, "::onStartDiscoveryFailed: "+errorCode);
                 String error = "Starting service discovery failed with code: " + errorCode;
                 //TODO: revisar qué hacer con estos casos... hacerl lo mismo que en checkServicesToBeResolved ¿? 
                 sendEvent(getReactApplicationContext(), EVENT_ERROR, null, error);
@@ -73,6 +74,7 @@ public class ZeroconfModule extends ReactContextBaseJavaModule {
 
             @Override
             public void onStopDiscoveryFailed(String serviceType, int errorCode) {
+                Log.d(LOG_TAG, "::onStopDiscoveryFailed: "+errorCode);
                 String error = "Stopping service discovery failed with code: " + errorCode;
                 //TODO: revisar qué hacer con estos casos... hacerl lo mismo que en checkServicesToBeResolved ¿? 
                 sendEvent(getReactApplicationContext(), EVENT_ERROR, null, error);
