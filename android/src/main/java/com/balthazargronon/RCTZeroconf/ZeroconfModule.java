@@ -111,13 +111,13 @@ public class ZeroconfModule extends ReactContextBaseJavaModule {
         String serviceType = String.format("_%s._%s.", type, protocol);
         mNsdManager.discoverServices(serviceType, NsdManager.PROTOCOL_DNS_SD, mDiscoveryListener);
     }
-
+/*
     @ReactMethod
     public void stop() {
         Log.d(LOG_TAG, "::stop:");
         mNsdManager.stopServiceDiscovery(mDiscoveryListener);
     }
-
+*/
     @ReactMethod
     public void resolve(String serviceInfoName) {
         Log.d(LOG_TAG, "::resolve: stringServiceName: "+serviceInfoName);

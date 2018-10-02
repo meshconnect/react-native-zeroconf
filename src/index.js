@@ -168,11 +168,11 @@ export default class Zeroconf extends EventEmitter {
 
   /**
    * Stop current scan if any
-   */
+   
   async stop () {
       console.log("[JSWRAPPER]RNZeroConf::stop()");
       await RNZeroconf.stop()
-  }
+  }*/
 
   /**
    * Check if there are services to be resolved
