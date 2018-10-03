@@ -86,13 +86,13 @@ export default class Zeroconf extends EventEmitter {
     })
 
     this._dListeners.remove = DeviceEventEmitter.addListener('RNZeroconfRemove', (service) => {      
-      console.log("[JSWRAPPER]RNZeroConf::RNZeroconfRemove:"+service.name);
+      console.log("[JSWRAPPER]RNZeroConf::RNZeroconfRemove: Removing from _services and _resolvedServices: "+service.name);
       delete this._services[service.name]
       delete this._resolvedServices[service.name]
 
       if(this._onGoingResolution && !this._onGoingResolutionIsInvalid && this._servicesToBeResolved[CURRENT_INDEX_BEING_RESOLVED].name == service.name){
           // si entramos aquí, es porque hay una transacción en curso y además el elemento que nos indica el sistema que tenemos que borrar es el de la transacción en curso.
-          console.log("[JSWRAPPER]RNZeroConf::RNZeroconfRemove: Marking current resolve transaction as invalid "+service.name);
+          console.log("[JSWRAPPER]RNZeroConf::RNZeroconfRemove: Marking current resolve transaction as invalid: "+service.name);
           this._onGoingResolutionIsInvalid = true;
       }      
 
@@ -109,18 +109,17 @@ export default class Zeroconf extends EventEmitter {
     })
 
     this._dListeners.resolved = DeviceEventEmitter.addListener('RNZeroconfResolved', (service) => {
-      console.log("[JSWRAPPER]RNZeroConf::RNZeroconfResolved: triggered", service);
       if(!this._onGoingResolutionIsInvalid){
-        console.log("[JSWRAPPER]RNZeroConf::RNZeroconfResolved: Adding resolved service to _resolvedServices", service);
+        console.log("[JSWRAPPER]RNZeroConf::RNZeroconfResolved: Adding resolved service to _resolvedServices: ", service.name, service.addresses[0]);
         this._resolvedServices[service.name] = service
         
         // Removes the first element selected in CURRENT_INDEX_BEING_RESOLVED of _servicesToBeResolved.
         this._servicesToBeResolved.splice(CURRENT_INDEX_BEING_RESOLVED, 1);
 
-        console.log("[JSWRAPPER]RNZeroConf::RNZeroconfResolved: _resolvedServices:", JSON.stringify(this._resolvedServices));
+        //console.log("[JSWRAPPER]RNZeroConf::RNZeroconfResolved: _resolvedServices:", JSON.stringify(this._resolvedServices));
         this._sortAndEmit('resolved', this._resolvedServices);
       }else{
-        console.log("[JSWRAPPER]RNZeroConf::RNZeroconfResolved: Current resolve transaction had been marked as invalid. Ignoring this notification.", service);
+        console.log("[JSWRAPPER]RNZeroConf::RNZeroconfResolved: Current resolve transaction had been marked as invalid. Ignoring this notification: ", service.name, service.addresses[0]);
         this._onGoingResolutionIsInvalid = false;
       }
       // Put ongoing to false, as is available again to continue resolving
