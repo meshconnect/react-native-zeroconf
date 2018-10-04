@@ -94,7 +94,8 @@ public class ZeroconfModule extends ReactContextBaseJavaModule {
 
             @Override
             public void onServiceFound(NsdServiceInfo serviceInfo) {
-                Log.e(LOG_TAG, "::onServiceFound:"+serviceInfo);
+                Log.d(LOG_TAG, "::onServiceFound:"+serviceInfo);
+
                 WritableMap service = new WritableNativeMap();
                 service.putString(KEY_SERVICE_NAME, serviceInfo.getServiceName());
                 sendEvent(getReactApplicationContext(), EVENT_FOUND, service, null);    
@@ -102,6 +103,8 @@ public class ZeroconfModule extends ReactContextBaseJavaModule {
 
             @Override
             public void onServiceLost(NsdServiceInfo serviceInfo) {
+                Log.d(LOG_TAG, "::onServiceLost:"+serviceInfo);
+                
                 WritableMap service = new WritableNativeMap();
                 service.putString(KEY_SERVICE_NAME, serviceInfo.getServiceName());
                 sendEvent(getReactApplicationContext(), EVENT_REMOVE, service, null);
