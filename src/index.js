@@ -3,7 +3,7 @@ import { EventEmitter } from 'events'
 
 const RNZeroconf = NativeModules.RNZeroconf
 
-const RESOLUTION_TIME_INTERVAL = 300;
+const RESOLUTION_TIME_INTERVAL = 500;
 const CURRENT_INDEX_BEING_RESOLVED = 0;
 
 export default class Zeroconf extends EventEmitter {
