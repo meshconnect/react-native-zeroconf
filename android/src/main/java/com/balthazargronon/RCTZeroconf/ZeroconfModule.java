@@ -20,6 +20,7 @@ import javax.annotation.Nullable;
 import java.util.Locale;
 import java.util.Map;
 import java.io.UnsupportedEncodingException;
+import java.util.HashSet;
 
 /**
  * Created by Jeremy White on 8/1/2016.
@@ -47,8 +48,11 @@ public class ZeroconfModule extends ReactContextBaseJavaModule {
     protected NsdManager mNsdManager;
     protected NsdManager.DiscoveryListener mDiscoveryListener;
 
+    private HashSet foundServices;
+
     public ZeroconfModule(ReactApplicationContext reactContext) {
         super(reactContext);
+        foundServices = new HashSet();
     }
 
     @Override
@@ -96,6 +100,13 @@ public class ZeroconfModule extends ReactContextBaseJavaModule {
             public void onServiceFound(NsdServiceInfo serviceInfo) {
                 Log.d(LOG_TAG, "::onServiceFound:"+serviceInfo);
 
+                boolean added = foundServices.add(serviceInfo.getServiceName());
+                if(added){
+                    Log.d(LOG_TAG, "::onServiceFound: Service added to foundServices: "+serviceInfo.getServiceName());
+                }else{
+                    Log.d(LOG_TAG, "::onServiceFound: !!! SERVICE NOT ADDED TO FOUNDSERVICES. ALREADY PRESENT: "+serviceInfo.getServiceName());
+                }
+
                 WritableMap service = new WritableNativeMap();
                 service.putString(KEY_SERVICE_NAME, serviceInfo.getServiceName());
                 sendEvent(getReactApplicationContext(), EVENT_FOUND, service, null);    
@@ -104,7 +115,14 @@ public class ZeroconfModule extends ReactContextBaseJavaModule {
             @Override
             public void onServiceLost(NsdServiceInfo serviceInfo) {
                 Log.d(LOG_TAG, "::onServiceLost:"+serviceInfo);
-                
+
+                boolean removed = foundServices.remove(serviceInfo.getServiceName());
+                if(removed){
+                    Log.d(LOG_TAG, "::onServiceLost: Service removed from foundServices: "+serviceInfo.getServiceName());
+                }else{
+                    Log.d(LOG_TAG, "::onServiceLost: !!! SERVICE NOT REMOVED FROM FOUNDSERVICES. NOT PRESENT: "+serviceInfo.getServiceName());
+                }
+
                 WritableMap service = new WritableNativeMap();
                 service.putString(KEY_SERVICE_NAME, serviceInfo.getServiceName());
                 sendEvent(getReactApplicationContext(), EVENT_REMOVE, service, null);
@@ -123,7 +141,17 @@ public class ZeroconfModule extends ReactContextBaseJavaModule {
 */
     @ReactMethod
     public void resolve(String serviceInfoName) {
-        Log.d(LOG_TAG, "::resolve: stringServiceName: "+serviceInfoName);
+        Log.d(LOG_TAG, "::resolve: is going to resolve: "+serviceInfoName);
+
+        boolean contained = foundServices.contains(serviceInfoName);
+        if(!contained){
+            Log.e(LOG_TAG, "::resolve: !!! SERVICE NOT PRESENT IN FOUND SERVICES. SKIPPING RESOLVE REQUEST: "+serviceInfoName);
+            WritableMap service = new WritableNativeMap();
+            service.putString(KEY_SERVICE_NAME, serviceInfoName);
+            sendEvent(getReactApplicationContext(), EVENT_RESOLVE_FAILED, service, null);
+            return;
+        }
+
         NsdServiceInfo serviceInfo = new NsdServiceInfo();
         serviceInfo.setServiceName(serviceInfoName);
         serviceInfo.setServiceType(SERVICE_TYPE);
