@@ -24,7 +24,7 @@
     "network-discovery",
     "discovery"
   ],
-  "author": "Balthazar Gronon <bgronon@gmail.com>",
+  "author": "forked by Drew Thaler <drew@meshconnect.us>, originally by Balthazar Gronon <bgronon@gmail.com>",
   "license": "MIT",
   "dependencies": {
     "events": "^1.1.0"
